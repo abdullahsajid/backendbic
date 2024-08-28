@@ -59,6 +59,17 @@ exports.fetchUserById = async (req,res) => {
         const userId = req.params.id
         const user = await User.findById(userId).select('-password').populate('escalationdetail')
         .populate('evaluationRating');
+
+        const uniqueEscalations = [];
+        const seenAgents = new Set();
+
+        user.escalationdetail.forEach(entry => {
+            if (!seenAgents.has(entry.agentName)) {
+                seenAgents.add(entry.agentName);
+                uniqueEscalations.push(entry);
+            }
+        });
+
         const counts = {
             average: 0,
             good: 0,
@@ -66,12 +77,12 @@ exports.fetchUserById = async (req,res) => {
             total:0
         };
 
-        user.escalationdetail.forEach(entry => {
+        uniqueEscalations.forEach(entry => {
             counts[entry.userrating]++;
-            counts['total']=counts.average+counts.good+counts.bad
         });
+
         counts['total'] = counts.average+counts.good+counts.bad
-        res.status(200).json({user,counts,success:true})
+        res.status(200).json({user: { ...user.toObject(), escalationdetail: uniqueEscalations },counts,success:true})
     }catch(error){
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -79,8 +90,34 @@ exports.fetchUserById = async (req,res) => {
 
 exports.getUserDetails = async (req,res) => {
     try{
-        const escaltionDetails = await escalation.find({agentName:`${req.params.name}`})
-        const evaluationDetails = await evaluation.find({agentName:`${req.params.name}`})
+        const { name } = req.params;
+        const { startDate, endDate } = req.body;
+        
+        const query = { agentName: name };
+        
+        if (endDate) {
+            const startOfDay = new Date(startDate);
+            startOfDay.setUTCHours(0, 0, 0, 0);
+        
+            const endOfDay = new Date(endDate);
+            endOfDay.setUTCHours(23, 59, 59, 999);
+        
+            query.createdAt = {
+                $gte: startOfDay,
+                $lte: endOfDay
+            };
+        } else if (startDate) {
+            query.$expr = {
+                $eq: [
+                    { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, 
+                    startDate
+                ]
+            };
+        }
+        
+        const escaltionDetails = await escalation.find(query);
+        const evaluationDetails = await evaluation.find(query);
+
         const counts = {
             average: 0,
             good: 0,

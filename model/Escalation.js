@@ -48,7 +48,9 @@ const escalation = new mongoose.Schema({
     audio:{
         type:String
     }
-})
+},
+{timestamps:true}
+)
 
 module.exports = mongoose.model('Escalation',escalation)
 

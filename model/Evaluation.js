@@ -47,7 +47,9 @@ const evaluation = new mongoose.Schema({
     evaluationsummary:{
         type:String
     }
-})
+},
+{timestamps:true}
+)
 module.exports = mongoose.model('Evaluation',evaluation)
 
 // greetings:[{

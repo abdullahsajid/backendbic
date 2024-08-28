@@ -4,6 +4,12 @@ const evaluationRating = require('../model/rating')
 
 exports.evaluation = async(req,res) => {
     try{
+        const evaluationDate = new Date();
+        const utcDate = new Date(Date.UTC(
+            evaluationDate.getFullYear(),
+            evaluationDate.getMonth(),
+            evaluationDate.getDate()
+        ));
         const data = {
             owner:req.user._id,
             useremail:req.body.email,
@@ -17,7 +23,8 @@ exports.evaluation = async(req,res) => {
             presenting:req.body.presenting,
             closing:req.body.closing,
             bonus:req.body.bonus,
-            evaluationsummary:req.body.evaluationsummary
+            evaluationsummary:req.body.evaluationsummary,
+            createdAt: utcDate
         }
         const evaluation = new evaluationModel(data)
         await evaluation.save()

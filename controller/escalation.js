@@ -3,6 +3,13 @@ const userModel = require('../model/user')
 
 exports.escalation = async (req,res) => {
     try{
+        const escalationDate = new Date();
+        const utcDate = new Date(Date.UTC(
+            escalationDate.getFullYear(),
+            escalationDate.getMonth(),
+            escalationDate.getDate()
+        ));
+
         const data = {
             owner:req.user._id,
             useremail:req.body.email,
@@ -17,6 +24,7 @@ exports.escalation = async (req,res) => {
             escalationaction:req.body.escAction,
             additionalsuccessrmation:req.body.successmaration,
             userrating:req.body.userrating,
+            createdAt: utcDate
         }
 
         if (req.file) {

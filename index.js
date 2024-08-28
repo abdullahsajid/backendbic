@@ -14,6 +14,7 @@ const path = require('path');
 const socket = require('socket.io')
 const http = require('http')
 
+
 const server = http.createServer(app)
 const io = socket(server,{
     cors:{
@@ -57,7 +58,7 @@ app.post('/createppc',auth,ppc)
 app.delete('/leaddelete/:id',auth,deleteLeader)
 app.get('/fetchleaders',auth,fetchTeamLead)
 app.get('/fetchuserbyid/:id',fetchUserById)
-app.get('/getuserdata/:name',auth,getUserDetails)
+app.post('/getuserdata/:name',auth,getUserDetails)
 app.get('/notification',auth,getNotification)
 
 app.get('/audio/:filename', (req, res) => {
